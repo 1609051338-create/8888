@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 初恋模拟器 · 完整故事版</title>
+    <style>
+        /* ===== 闪亮少女风 ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'PingFang SC', 'Microsoft YaHei', cursive, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #fff0f5 0%, #ffe4e1 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .sparkle-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; overflow: hidden; z-index: 0;
+        }
+        .sparkle-bg span {
+            position: absolute;
+            font-size: 24px;
+            color: rgba(255, 215, 0, 0.25);
+            animation: floatSparkle 12s infinite alternate ease-in-out;
+        }
+        .sparkle-bg span:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; font-size: 30px; }
+        .sparkle-bg span:nth-child(2) { top: 20%; right: 8%; animation-delay: 2s; font-size: 28px; }
+        .sparkle-bg span:nth-child(3) { bottom: 30%; left: 12%; animation-delay: 4s; font-size: 34px; }
+        .sparkle-bg span:nth-child(4) { bottom: 15%; right: 5%; animation-delay: 6s; font-size: 26px; }
+        .sparkle-bg span:nth-child(5) { top: 50%; left: 50%; animation-delay: 3s; font-size: 40px; opacity: 0.15; }
+        @keyframes floatSparkle {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            100% { transform: translate(30px, -40px) rotate(20deg) scale(1.1); }
+        }
+        #app {
+            max-width: 1100px; width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 48px;
+            box-shadow: 0 20px 60px rgba(233, 30, 99, 0.12), 0 0 0 2px #ffdab9 inset, 0 0 0 4px #fff5f7 inset;
+            padding: 28px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #ffdab9;
+            padding-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .game-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffb347, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 12px rgba(255, 105, 180, 0.2);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .game-title i { font-style: normal; -webkit-text-fill-color: initial; color: #ffb347; animation: sparkleTitle 2s infinite; }
+        @keyframes sparkleTitle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.15) rotate(5deg); }
+        }
+        .game-stats-mini {
+            display: flex; gap: 14px; font-size: 14px; color: #b05a6a; flex-wrap: wrap;
+        }
+        .game-stats-mini span {
+            background: rgba(255, 218, 185, 0.4);
+            padding: 6px 18px; border-radius: 40px; font-weight: 600;
+            border: 1px solid #ffdab9; color: #a0525a;
+            box-shadow: 0 2px 8px rgba(255, 182, 193, 0.15);
+            backdrop-filter: blur(4px);
+        }
+        .stat-highlight { color: #d81b60; }
+
+        .game-body {
+            display: flex; flex: 1; gap: 24px; margin-top: 18px; min-height: 500px;
+        }
+        .narrative-panel {
+            flex: 2;
+            background: rgba(255, 248, 245, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 32px;
+            border: 2px solid #ffdab9;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            min-height: 480px;
+            max-height: 620px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(255, 182, 193, 0.12);
+        }
+        .narrative-panel::-webkit-scrollbar { width: 6px; }
+        .narrative-panel::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 20px; }
+        .narrative-content {
+            flex: 1;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #4a2a3a;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .narrative-content .msg-dm {
+            color: #880e4f;
+            background: rgba(255, 182, 193, 0.25);
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 4px 0 10px;
+            font-weight: 600;
+            border-left: 5px solid #ff69b4;
+            backdrop-filter: blur(4px);
+        }
+        .narrative-content .msg-player {
+            color: #1a5276;
+            background: rgba(235, 245, 251, 0.7);
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 4px 0 10px;
+            font-weight: 600;
+            border-left: 5px solid #2980b9;
+        }
+        .narrative-content .msg-event {
+            color: #7d6608;
+            background: rgba(255, 249, 196, 0.6);
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 4px 0 10px;
+            font-weight: 600;
+            border-left: 5px solid #f1c40f;
+        }
+        .narrative-content .msg-system {
+            color: #8a6d6d;
+            font-style: italic;
+            padding: 4px 0;
+            border-top: 1px dashed #ffdab9;
+            margin-top: 8px;
+        }
+        .narrative-content .choice-block {
+            margin: 14px 0 10px;
+            padding: 16px 20px;
+            background: rgba(255, 218, 185, 0.25);
+            border-radius: 36px;
+            border: 2px solid #ffdab9;
+            backdrop-filter: blur(4px);
+        }
+        .narrative-content .choice-item {
+            display: block;
+            padding: 12px 22px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 60px;
+            cursor: pointer;
+            border: 2px solid #ffb6c1;
+            transition: all 0.25s;
+            font-size: 15px;
+            color: #4a2a3a;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(255, 182, 193, 0.15);
+            position: relative;
+        }
+        .narrative-content .choice-item:hover {
+            background: #fff0f5;
+            border-color: #ff69b4;
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.2);
+        }
+        .narrative-content .choice-item.selected {
+            background: #ffb6c1;
+            border-color: #d81b60;
+            color: #fff;
+        }
+        .narrative-content .choice-item.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .narrative-content .result-flash {
+            background: rgba(255, 182, 193, 0.2);
+            border-radius: 30px;
+            padding: 8px 18px;
+            margin: 6px 0;
+            border-left: 6px solid #ff69b4;
+            font-weight: 600;
+            color: #880e4f;
+            backdrop-filter: blur(4px);
+        }
+        .narrative-content .monthly-summary {
+            background: rgba(255, 218, 185, 0.3);
+            border-radius: 24px;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border: 2px solid #ffdab9;
+        }
+
+        .status-panel {
+            flex: 1;
+            min-width: 210px;
+            background: rgba(255, 248, 245, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 20px 22px;
+            border: 2px solid #ffdab9;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 620px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(255, 182, 193, 0.12);
+        }
+        .status-panel::-webkit-scrollbar { width: 4px; }
+        .status-panel::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 20px; }
+        .status-section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #b05a6a;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+            border-bottom: 2px solid #ffdab9;
+            padding-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            color: #4a2a3a;
+        }
+        .status-row .label { color: #b05a6a; }
+        .status-row .value { font-weight: 700; }
+        .status-row .value.good { color: #2e7d32; }
+        .status-row .value.warn { color: #e67e22; }
+        .status-row .value.danger { color: #c2185b; }
+        .status-row .value.heart { color: #e91e63; }
+        .npc-list {
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .npc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed #ffdab9;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 12px;
+            padding: 4px 8px;
+        }
+        .npc-item:hover { background: rgba(255, 182, 193, 0.15); }
+        .npc-item .npc-name { color: #4a2a3a; font-weight: 500; }
+        .npc-item .npc-like { color: #e91e63; font-weight: 700; }
+        .npc-item.target { background: rgba(255, 105, 180, 0.15); border-left: 4px solid #ff69b4; }
+
+        .action-bar {
+            margin-top: 20px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            border-top: 3px solid #ffdab9;
+            padding-top: 18px;
+            align-items: center;
+        }
+        .action-btn {
+            background: linear-gradient(145deg, #ffb6c1, #ff69b4);
+            border: none;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.35);
+            background: linear-gradient(145deg, #ff69b4, #d81b60);
+        }
+        .action-btn.primary {
+            background: linear-gradient(145deg, #ffb347, #ff8a5c);
+            box-shadow: 0 6px 20px rgba(255, 179, 71, 0.3);
+        }
+        .action-btn.primary:hover {
+            background: linear-gradient(145deg, #ff8a5c, #e67e22);
+        }
+        .action-btn.secondary {
+            background: linear-gradient(145deg, #d4a5b5, #b05a6a);
+            box-shadow: 0 6px 20px rgba(176, 90, 106, 0.2);
+        }
+        .action-btn.secondary:hover {
+            background: linear-gradient(145deg, #b05a6a, #8a4a5a);
+        }
+        .action-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            transform: none;
+        }
+        .action-hint {
+            flex: 1;
+            text-align: right;
+            font-size: 14px;
+            color: #b05a6a;
+            font-weight: 500;
+            padding-right: 8px;
+        }
+
+        @media (max-width: 720px) {
+            #app { padding: 20px; }
+            .game-body { flex-direction: column; }
+            .narrative-panel { max-height: 400px; min-height: 280px; }
+            .status-panel { max-height: 280px; min-height: 200px; }
+            .game-title { font-size: 22px; }
+            .game-stats-mini { font-size: 12px; gap: 8px; }
+            .game-stats-mini span { padding: 4px 14px; }
+            .action-btn { padding: 8px 20px; font-size: 14px; }
+            .action-hint { text-align: left; width: 100%; margin-top: 8px; }
+        }
+        @media (max-width: 480px) {
+            #app { padding: 14px; }
+            .game-header { flex-direction: column; align-items: flex-start; }
+            .narrative-panel { max-height: 340px; padding: 16px; }
+            .status-panel { max-height: 260px; padding: 16px; }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .text-muted { color: #b05a6a; font-size: 13px; opacity: 0.7; }
+
+        .petal {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 22px;
+            transition: all 2.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            opacity: 1;
+        }
+        .petal.fall {
+            transform: translateY(350px) rotate(420deg);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="sparkle-bg">
+        <span>✨</span><span>🌟</span><span>💖</span><span>🌸</span><span>✨</span>
+    </div>
+
+    <div id="app">
+        <div class="game-header">
+            <div class="game-title">
+                <i>✨</i> 初恋模拟器 · 故事版 <i>💗</i>
+            </div>
+            <div class="game-stats-mini">
+                <span>📅 第 <strong id="displayRound">0</strong> 周</span>
+                <span>📚 <strong id="displayGrade">大一</strong></span>
+                <span>❤️ <strong id="displayLoveStatus" class="stat-highlight">单身</strong></span>
+                <span>💰 ¥<strong id="displayMoney">0</strong></span>
+            </div>
+        </div>
+
+        <div class="game-body">
+            <div class="narrative-panel" id="narrativePanel">
+                <div class="narrative-content" id="narrativeContent">
+                    <div class="msg-system">🌸✨ 欢迎来到完整故事版～ 每个行动都有细腻剧情。</div>
+                    <div class="msg-system">点击 <strong>开始游戏</strong> 开启你的大学初恋之旅。</div>
+                </div>
+            </div>
+            <div class="status-panel" id="statusPanel">
+                <div class="status-section-title">👤 玩家档案</div>
+                <div class="status-row"><span class="label">姓名</span><span id="sName">—</span></div>
+                <div class="status-row"><span class="label">性别</span><span id="sGender">—</span></div>
+                <div class="status-row"><span class="label">出身</span><span id="sOrigin">—</span></div>
+                <div class="status-row"><span class="label">专业</span><span id="sMajor">—</span></div>
+                <div class="status-row"><span class="label">难度</span><span id="sDifficulty">—</span></div>
+                <div class="status-section-title">📊 核心属性</div>
+                <div class="status-row"><span class="label">❤️ 心情</span><span class="value" id="sMood">50</span></div>
+                <div class="status-row"><span class="label">💪 健康</span><span class="value" id="sHealth">80</span></div>
+                <div class="status-row"><span class="label">🧠 智商</span><span class="value" id="sIQ">—</span></div>
+                <div class="status-row"><span class="label">🗣 口才</span><span class="value" id="sSpeech">50</span></div>
+                <div class="status-row"><span class="label">🏃 才艺</span><span class="value" id="sSport">50</span></div>
+                <div class="status-row"><span class="label">🍀 运气</span><span class="value" id="sLucky">50</span></div>
+                <div class="status-row"><span class="label">📈 绩点</span><span class="value" id="sGPA">2.0</span></div>
+                <div class="status-row"><span class="label">💤 疲惫</span><span class="value" id="sTired">0</span></div>
+                <div class="status-row"><span class="label">💕 恋爱经验</span><span class="value" id="sLoveExp">0</span></div>
+                <div class="status-section-title">💖 NPC好感 (点击切换目标)</div>
+                <div id="npcList"><div class="text-muted">尚未结识</div></div>
+                <div class="status-section-title">📰 校园舆论</div>
+                <div id="sOpinion" style="font-size:13px;color:#b05a6a;">暂无</div>
+            </div>
+        </div>
+
+        <div class="action-bar" id="actionBar">
+            <button class="action-btn primary" id="btnStart">🌸 开始游戏</button>
+            <button class="action-btn" id="btnStatus">📋 查看状态</button>
+            <button class="action-btn secondary" id="btnEnd">🏁 结束游戏</button>
+            <span class="action-hint" id="actionHint">点击开始创建角色</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  完整故事版 · 所有功能齐全
+        // ============================================================
+
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const pick = (arr) => arr[rand(0, arr.length - 1)];
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+        // ---------- 游戏状态 ----------
+        const G = {
+            name: '', gender: '男', origin: '小镇普通家庭', difficulty: '标准',
+            uniType: '综合本科', orientation: '不限', descMode: '详细细腻', major: '文科',
+            appearance: 70, eq: 50, mood: 70, iq: 50, style: 60, speech: 55, sport: 50,
+            lucky: 50, health: 80, money: 0, gpa: 2.0, loveExp: 0, tired: 0,
+            fame: 0, reputation: 50, heartThreshold: 50,
+            round: 0, grade: 1, weekInGrade: 0, month: 1,
+            isGameOver: false, isInSetup: true,
+            loveStatus: '单身', npcLikes: {}, npcList: [], currentTarget: null,
+            loverName: null, isDating: false, isColdWar: false, coldWarWeeks: 0,
+            breakupCount: 0, weekHours: 12,
+            opinion: '校园生活平静如水。',
+            waitingChoice: false, choiceList: [], choiceCallback: null,
+            setupStep: 0, setupData: {},
+            totalDates: 0, totalGifts: 0, totalConflicts: 0,
+            inDateFlow: false, pendingResults: [],
+            monthlyIncome: 0, monthlySpent: 0, monthStartMoney: 0,
+            // 用于随机事件冷却
+            eventCooldown: 0,
+            // 记录已触发的事件，避免重复
+            eventHistory: [],
+        };
+
+        // ---------- NPC池 ----------
+        const NPC_POOL = {
+            男: [
+                { name: '林逸', desc: '计算机系学霸，温柔内敛', personality: '内向' },
+                { name: '陈晨', desc: '篮球队长，阳光开朗', personality: '外向' },
+                { name: '周子轩', desc: '文艺青年，弹吉他细腻', personality: '敏感' },
+                { name: '赵一鸣', desc: '学生会干部，社交达人', personality: '社交' },
+                { name: '陆远', desc: '医学生，沉稳可靠', personality: '沉稳' },
+            ],
+            女: [
+                { name: '苏念', desc: '中文系才女，温柔安静', personality: '内向' },
+                { name: '李欣桐', desc: '舞蹈社社长，活泼大方', personality: '外向' },
+                { name: '顾清', desc: '学霸，理性冷静', personality: '沉稳' },
+                { name: '许甜甜', desc: '可爱萌妹，声音软糯', personality: '敏感' },
+                { name: '沈悦', desc: '学生会外联部，开朗直率', personality: '社交' },
+            ]
+        };
+
+        const ORIGIN_CONFIG = {
+            '小镇普通家庭': { moneyBonus: 0, moneyBase: 1500, parentInterfere: 0.2 },
+            '城市中产': { moneyBonus: 800, moneyBase: 2300, parentInterfere: 0.6 },
+            '工薪家庭': { moneyBonus: 0, moneyBase: 1800, parentInterfere: 0.3 },
+            '小康独子': { moneyBonus: 1500, moneyBase: 2800, parentInterfere: 0.8 },
+            '农村低保': { moneyBonus: -600, moneyBase: 900, parentInterfere: 0.1 },
+        };
+
+        const DIFFICULTY_CONFIG = {
+            '休闲': { eventPenalty: 0.5, bonusMult: 2.0, conflictRate: 0.1, moneyMult: 0.8 },
+            '标准': { eventPenalty: 1.0, bonusMult: 1.0, conflictRate: 0.25, moneyMult: 1.0 },
+            '硬核': { eventPenalty: 2.0, bonusMult: 0.6, conflictRate: 0.45, moneyMult: 1.3 },
+            '现实': { eventPenalty: 2.5, bonusMult: 0.4, conflictRate: 0.6, moneyMult: 1.5 },
+        };
+
+        // ============================================================
+        //  UI 更新
+        // ============================================================
+
+        function updateUI() {
+            document.getElementById('displayRound').textContent = G.round;
+            const gradeNames = ['大一', '大二', '大三', '大四'];
+            document.getElementById('displayGrade').textContent = gradeNames[G.grade - 1] || '大四';
+            document.getElementById('displayLoveStatus').textContent = G.loveStatus;
+            document.getElementById('displayMoney').textContent = Math.floor(G.money);
+
+            document.getElementById('sName').textContent = G.name || '—';
+            document.getElementById('sGender').textContent = G.gender || '—';
+            document.getElementById('sOrigin').textContent = G.origin || '—';
+            document.getElementById('sMajor').textContent = G.major || '—';
+            document.getElementById('sDifficulty').textContent = G.difficulty || '—';
+
+            document.getElementById('sMood').textContent = Math.floor(G.mood);
+            document.getElementById('sMood').className = 'value' + (G.mood < 40 ? ' danger' : G.mood < 60 ? ' warn' : ' good');
+            document.getElementById('sHealth').textContent = Math.floor(G.health);
+            document.getElementById('sHealth').className = 'value' + (G.health < 40 ? ' danger' : G.health < 60 ? ' warn' : ' good');
+            document.getElementById('sIQ').textContent = Math.floor(G.iq);
+            document.getElementById('sSpeech').textContent = Math.floor(G.speech);
+            document.getElementById('sSport').textContent = Math.floor(G.sport);
+            document.getElementById('sLucky').textContent = Math.floor(G.lucky);
+            document.getElementById('sGPA').textContent = G.gpa.toFixed(2);
+            document.getElementById('sTired').textContent = Math.floor(G.tired);
+            document.getElementById('sLoveExp').textContent = Math.floor(G.loveExp);
+
+            const npcDiv = document.getElementById('npcList');
+            const entries = Object.entries(G.npcLikes).filter(([k, v]) => v > 0);
+            if (entries.length === 0) {
+                npcDiv.innerHTML = '<div class="text-muted">尚未结识</div>';
+            } else {
+                npcDiv.innerHTML = entries.map(([name, like]) => {
+                    const isTarget = (name === G.currentTarget);
+                    return `<div class="npc-item ${isTarget ? 'target' : ''}" data-name="${name}">
+                        <span class="npc-name">${name} ${isTarget ? '⭐' : ''}</span>
+                        <span class="npc-like">💗 ${Math.floor(like)}</span>
+                    </div>`;
+                }).join('');
+                document.querySelectorAll('.npc-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const name = el.dataset.name;
+                        if (name && G.npcLikes[name] !== undefined) {
+                            G.currentTarget = name;
+                            narrate(`💬 你将注意力转向 ${name}`, 'dm');
+                            updateUI();
+                        }
+                    });
+                });
+            }
+
+            document.getElementById('sOpinion').textContent = G.opinion || '暂无';
+            const hint = document.getElementById('actionHint');
+            if (G.isGameOver) hint.textContent = '🏁 已结束，点击「开始游戏」重来';
+            else if (G.isInSetup) hint.textContent = '✏️ 创建角色中...';
+            else if (G.waitingChoice) hint.textContent = '👆 请选择一个选项';
+            else if (G.inDateFlow) hint.textContent = '💕 约会进行中...';
+            else hint.textContent = `⏳ 本周剩余 ${G.weekHours}h · 当前目标: ${G.currentTarget || '无'}`;
+        }
+
+        function narrate(text, type = 'system') {
+            const panel = document.getElementById('narrativeContent');
+            const div = document.createElement('div');
+            div.className = `fade-in msg-${type}`;
+            if (type === 'system') {
+                div.style.color = '#8a6d6d';
+                div.style.fontStyle = 'italic';
+                div.style.padding = '4px 0';
+            } else if (type === 'dm') {
+                div.style.background = 'rgba(255, 182, 193, 0.25)';
+                div.style.padding = '8px 18px';
+                div.style.borderRadius = '30px';
+                div.style.display = 'inline-block';
+                div.style.margin = '4px 0 10px';
+                div.style.fontWeight = '600';
+                div.style.color = '#880e4f';
+                div.style.borderLeft = '5px solid #ff69b4';
+                div.style.backdropFilter = 'blur(4px)';
+            } else if (type === 'player') {
+                div.style.background = 'rgba(235, 245, 251, 0.7)';
+                div.style.padding = '8px 18px';
+                div.style.borderRadius = '30px';
+                div.style.display = 'inline-block';
+                div.style.margin = '4px 0 10px';
+                div.style.fontWeight = '600';
+                div.style.color = '#1a5276';
+                div.style.borderLeft = '5px solid #2980b9';
+            } else if (type === 'event') {
+                div.style.background = 'rgba(255, 249, 196, 0.6)';
+                div.style.padding = '8px 18px';
+                div.style.borderRadius = '30px';
+                div.style.display = 'inline-block';
+                div.style.margin = '4px 0 10px';
+                div.style.fontWeight = '600';
+                div.style.color = '#7d6608';
+                div.style.borderLeft = '5px solid #f1c40f';
+            } else if (type === 'choice') {
+                div.style.margin = '14px 0 10px';
+                div.style.padding = '16px 20px';
+                div.style.background = 'rgba(255, 218, 185, 0.25)';
+                div.style.borderRadius = '36px';
+                div.style.border = '2px solid #ffdab9';
+                div.style.backdropFilter = 'blur(4px)';
+            } else if (type === 'result') {
+                div.style.background = 'rgba(255, 182, 193, 0.2)';
+                div.style.padding = '8px 18px';
+                div.style.borderRadius = '30px';
+                div.style.margin = '6px 0';
+                div.style.borderLeft = '6px solid #ff69b4';
+                div.style.fontWeight = '600';
+                div.style.color = '#880e4f';
+                div.style.backdropFilter = 'blur(4px)';
+            } else if (type === 'monthly') {
+                div.style.background = 'rgba(255, 218, 185, 0.3)';
+                div.style.padding = '12px 18px';
+                div.style.borderRadius = '24px';
+                div.style.margin = '10px 0';
+                div.style.border = '2px solid #ffdab9';
+                div.style.fontWeight = '600';
+                div.style.color = '#b05a6a';
+            }
+            div.textContent = text;
+            panel.appendChild(div);
+            panel.scrollTop = panel.scrollHeight;
+            updateUI();
+        }
+
+        function narrateClear() {
+            document.getElementById('narrativeContent').innerHTML = '';
+        }
+
+        // ---------- 选择器 ----------
+        function showChoices(choices, callback) {
+            G.waitingChoice = true;
+            G.choiceList = choices;
+            G.choiceCallback = callback;
+
+            const panel = document.getElementById('narrativeContent');
+            const block = document.createElement('div');
+            block.className = 'choice-block fade-in';
+            block.id = 'choiceBlock';
+
+            choices.forEach((item, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'choice-item';
+                btn.textContent = `💗 ${idx+1}. ${item.text}`;
+                btn.dataset.idx = idx;
+                btn.addEventListener('click', (e) => {
+                    triggerPetals(e.clientX, e.clientY);
+                    if (G.waitingChoice) {
+                        G.waitingChoice = false;
+                        document.querySelectorAll('.choice-item').forEach(el => el.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        document.querySelectorAll('.choice-item').forEach(el => el.classList.add('disabled'));
+                        if (G.choiceCallback) {
+                            const cb = G.choiceCallback;
+                            G.choiceCallback = null;
+                            cb(idx);
+                        }
+                    }
+                });
+                block.appendChild(btn);
+            });
+            panel.appendChild(block);
+            panel.scrollTop = panel.scrollHeight;
+            updateUI();
+        }
+
+        function removeChoices() {
+            const block = document.getElementById('choiceBlock');
+            if (block) block.remove();
+            G.waitingChoice = false;
+            G.choiceList = [];
+            G.choiceCallback = null;
+        }
+
+        function triggerPetals(x, y) {
+            const count = 18;
+            const emojis = ['🌸', '🌺', '🌷', '💮', '✨', '🌟'];
+            for (let i = 0; i < count; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.textContent = pick(emojis);
+                petal.style.left = (x + rand(-40, 40)) + 'px';
+                petal.style.top = (y + rand(-30, 30)) + 'px';
+                petal.style.fontSize = rand(14, 28) + 'px';
+                petal.style.transform = `rotate(${rand(0, 360)}deg)`;
+                document.body.appendChild(petal);
+                requestAnimationFrame(() => {
+                    petal.style.transform = `translate(${rand(-120, 120)}px, ${rand(150, 350)}px) rotate(${rand(0, 720)}deg)`;
+                    petal.style.opacity = '0';
+                });
+                setTimeout(() => petal.remove(), 2500);
+            }
+        }
+
+        // ---------- 属性修改 ----------
+        function modAttr(attr, delta, reason = '') {
+            if (G.isGameOver) return;
+            const old = G[attr];
+            let newVal = old + delta;
+            if (attr === 'mood') newVal = clamp(newVal, 0, 100);
+            else if (attr === 'health') newVal = clamp(newVal, 0, 100);
+            else if (attr === 'tired') newVal = Math.max(0, newVal);
+            else if (attr === 'money') newVal = Math.max(0, newVal);
+            else if (attr === 'gpa') newVal = clamp(newVal, 0, 4.0);
+            else if (attr === 'loveExp') newVal = clamp(newVal, 0, 100);
+            else if (attr === 'iq') newVal = clamp(newVal, 30, 100);
+            else if (attr === 'speech') newVal = clamp(newVal, 30, 100);
+            else if (attr === 'sport') newVal = clamp(newVal, 30, 100);
+            else if (attr === 'lucky') newVal = clamp(newVal, 1, 100);
+            else if (attr === 'appearance') newVal = clamp(newVal, 60, 100);
+            else if (attr === 'style') newVal = clamp(newVal, 60, 100);
+            else if (attr === 'eq') newVal = clamp(newVal, 30, 100);
+            else if (attr === 'fame') newVal = clamp(newVal, 0, 100);
+            else if (attr === 'reputation') newVal = clamp(newVal, 0, 100);
+            else newVal = newVal;
+
+            const actual = newVal - G[attr];
+            G[attr] = newVal;
+            if (actual !== 0 && reason) {
+                const sign = actual > 0 ? '+' : '';
+                G.pendingResults.push(`${attr} ${sign}${actual.toFixed(1)} (${reason})`);
+            }
+            updateUI();
+        }
+
+        function modNpcLike(name, delta, reason = '') {
+            if (!name || G.isGameOver) return;
+            if (!G.npcLikes[name]) G.npcLikes[name] = 30;
+            const old = G.npcLikes[name];
+            let newVal = clamp(old + delta, 0, 100);
+            G.npcLikes[name] = newVal;
+            const actual = newVal - old;
+            if (actual !== 0 && reason) {
+                const sign = actual > 0 ? '+' : '';
+                G.pendingResults.push(`${name} 好感 ${sign}${actual.toFixed(1)} (${reason})`);
+            }
+            if (G.loveStatus === '恋爱中' && G.loverName === name && newVal < 30) {
+                G.loveStatus = '分手';
+                G.pendingResults.push(`💔 与 ${name} 的感情走到尽头... 好感低于30，自动分手。`);
+                G.loverName = null;
+            }
+            updateUI();
+        }
+
+        function flushResults() {
+            if (G.pendingResults.length > 0) {
+                const msg = '📊 ' + G.pendingResults.join(' · ');
+                narrate(msg, 'result');
+                G.pendingResults = [];
+            }
+        }
+
+        // ============================================================
+        //  月度结算系统
+        // ============================================================
+
+        function monthlySettle() {
+            // 每月初 (第1周) 显示生活费收入
+            if (G.weekInGrade === 0) {
+                const base = ORIGIN_CONFIG[G.origin]?.moneyBase || 1500;
+                const bonus = ORIGIN_CONFIG[G.origin]?.moneyBonus || 0;
+                const income = base + bonus + rand(0, 200);
+                G.monthlyIncome = income;
+                G.monthStartMoney = G.money;
+                G.monthlySpent = 0;
+                narrate(`💰 月初父母给生活费 ¥${income}，当前余额 ¥${Math.floor(G.money)}`, 'monthly');
+                // 显示本月预算
+                narrate(`📋 本月预计开销：伙食¥800-1500，水电日用品¥150-300，学习资料¥100-400，话费网费¥100`, 'system');
+            }
+
+            // 每月末 (第4周) 结算
+            if (G.weekInGrade === 3) {
+                const spent = G.monthStartMoney - G.money + G.monthlyIncome;
+                G.monthlySpent = Math.max(0, spent);
+                const balance = G.money;
+                narrate(`📊 月末结算：本月收入 ¥${G.monthlyIncome}，支出 ¥${Math.floor(G.monthlySpent)}，余额 ¥${Math.floor(balance)}`, 'monthly');
+                // 生成月度舆论板块
+                generateMonthlyOpinion();
+                // 检查赤字
+                if (balance < 0) {
+                    narrate('⚠️ 生活费赤字！下月将削减开支。', 'event');
+                    modAttr('money', 200, '紧急补助');
+                }
+                // 更新月数
+                G.month++;
+            }
+        }
+
+        // ---------- 月度舆论 (学业、感情、人际) ----------
+        function generateMonthlyOpinion() {
+            let academic = '', love = '', social = '';
+            // 学业
+            if (G.gpa >= 3.5) academic = '📚 学业表现优异，绩点名列前茅，有望获得奖学金。';
+            else if (G.gpa >= 2.5) academic = '📚 学业稳步推进，绩点中等，继续努力可保研。';
+            else if (G.gpa >= 1.5) academic = '📚 学业有些吃力，绩点偏低，需要抓紧复习。';
+            else academic = '📚 学业警告！多门课程挂科，面临延毕风险。';
+
+            // 感情
+            if (G.loveStatus === '恋爱中' && G.loverName) {
+                love = `💕 你和 ${G.loverName} 的恋情在校园里传开，有人祝福也有人酸。`;
+            } else if (G.loveStatus === '分手') {
+                love = `💔 你和 ${G.loverName || '前任'} 分手的事成为大家茶余饭后的谈资。`;
+            } else if (G.currentTarget && G.npcLikes[G.currentTarget] >= 50) {
+                love = `😳 大家都在悄悄磕你和 ${G.currentTarget} 的CP。`;
+            } else {
+                love = '💭 感情生活平淡，尚未有特别的发展。';
+            }
+
+            // 人际
+            if (G.reputation >= 70) social = '👥 你在同学中口碑很好，大家都觉得你友善可靠。';
+            else if (G.reputation >= 50) social = '👥 人际关系正常，有几个知心朋友。';
+            else if (G.reputation >= 30) social = '👥 人际关系有些紧张，需要注意言行。';
+            else social = '👥 人际关系较差，需要反思自己的处事方式。';
+
+            const opinion = `【本月舆论】\n${academic}\n${love}\n${social}`;
+            G.opinion = opinion;
+            narrate(opinion, 'monthly');
+        }
+
+        // ============================================================
+        //  周结算 (含月度结算)
+        // ============================================================
+
+        function weekSettle() {
+            // 疲惫结算
+            const tired = G.tired;
+            let healthLoss = 0;
+            if (tired >= 31) healthLoss = -22;
+            else if (tired >= 23) healthLoss = -12;
+            else if (tired >= 15) healthLoss = -7;
+            else if (tired >= 8) healthLoss = -3;
+            if (healthLoss < 0) modAttr('health', healthLoss, '疲惫累积');
+            modAttr('tired', -Math.min(G.tired, 4), '周结算恢复');
+
+            if (G.health <= 19) {
+                narrate('🏥 健康严重透支，校医院卧床两周...', 'event');
+                G.health = 20;
+                modAttr('health', 5, '卧床恢复');
+            }
+            if (G.mood < 50) modAttr('mood', 2, '心情自然恢复');
+            if (G.loveStatus === '恋爱中') modAttr('loveExp', 0.5, '恋爱中经验积累');
+
+            if (G.isColdWar) {
+                G.coldWarWeeks--;
+                if (G.loverName) modNpcLike(G.loverName, -2, '冷战好感流失');
+                modAttr('mood', -3, '冷战心情低落');
+                if (G.coldWarWeeks <= 0) {
+                    G.isColdWar = false;
+                    narrate('🤝 冷战结束了，关系缓和。', 'event');
+                }
+            }
+
+            // 月度结算 (每4周)
+            if (G.weekInGrade === 0) {
+                monthlySettle();
+            }
+
+            // 随机事件 (每回合掷1d12)
+            if (G.round > 0 && !G.isGameOver && !G.isInSetup) {
+                const roll = rand(1, 12);
+                if (roll <= 4) {
+                    triggerRandomEvent();
+                    return; // 事件内部会调用 weekSettleEnd
+                }
+            }
+
+            flushResults();
+            weekSettleEnd();
+        }
+
+        function weekSettleEnd() {
+            G.round++;
+            G.weekInGrade++;
+            if (G.weekInGrade >= 4) {
+                G.weekInGrade = 0;
+                // 年级升级 (每16周升一级)
+                if (G.round % 16 === 0 && G.grade < 4) {
+                    G.grade++;
+                    narrate(`🎓 升入${['大二','大三','大四'][G.grade-2]}！`, 'event');
+                    if (G.grade === 4) narrate('📅 大四了，毕业抉择临近。', 'event');
+                }
+            }
+            // 检查结局：大四结束 (第64周)
+            if (G.grade === 4 && G.weekInGrade === 0 && G.round >= 64) {
+                narrate('🎓 大学四年结束！', 'event');
+                triggerEnding();
+                return;
+            }
+            G.weekHours = 12;
+            if (!G.isGameOver && !G.isInSetup && !G.waitingChoice) {
+                setTimeout(showWeekActions, 400);
+            }
+            updateUI();
+        }
+
+        // ============================================================
+        //  随机事件系统 (完整9类，带故事)
+        // ============================================================
+
+        function triggerRandomEvent() {
+            if (G.isGameOver || G.isInSetup) return;
+            // 冷却机制，防止连续触发
+            if (G.eventCooldown > 0) { G.eventCooldown--; return; }
+
+            const target = G.currentTarget || pick(Object.keys(G.npcLikes));
+            if (!target) return;
+
+            // 随机选择事件类型 (0-8)
+            const eventType = rand(0, 8);
+            const events = [
+                // 0: 用餐金钱尴尬
+                () => {
+                    narrate(`🍜 食堂里人声鼎沸，你端着餐盘寻找座位，忽然看到 ${target} 独自坐在角落。`, 'event');
+                    const choices = [
+                        { text: '主动坐过去，自然地搭话' },
+                        { text: '远远打个招呼，自己找位置' },
+                        { text: '假装没看见，快速走过' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 5, '主动共餐');
+                            modAttr('mood', 5, '共餐愉快');
+                            modAttr('money', -30, '请客');
+                            narrate(`你坐到 ${target} 对面，聊起了今天的课程，气氛轻松。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 1, '礼貌招呼');
+                            narrate(`你远远挥了挥手， ${target} 也点头回应，然后各自吃饭。`, 'dm');
+                        } else {
+                            modNpcLike(target, -3, '刻意回避');
+                            modAttr('mood', -3, '错过机会');
+                            narrate(`你低头匆匆走过，余光瞥见 ${target} 似乎有些失落。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 1: 座位肢体尴尬
+                () => {
+                    narrate(`📚 图书馆里，你刚找到座位，发现 ${target} 就坐在你旁边。`, 'event');
+                    const choices = [
+                        { text: '专注学习，保持自然距离' },
+                        { text: '偶尔偷看对方，身体微微靠近' },
+                        { text: '主动搭话，借笔记' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 2, '自然相处');
+                            modAttr('iq', 1, '专注');
+                            narrate('你沉浸在学习中，但能感觉到对方也在认真看书。', 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, -2, '过于刻意');
+                            modAttr('mood', -2, '尴尬');
+                            narrate('你频频偷看，对方似乎察觉到了，气氛有些微妙。', 'dm');
+                        } else {
+                            modNpcLike(target, 4, '主动交流');
+                            modAttr('speech', 1, '练习');
+                            narrate(`你鼓起勇气借笔记， ${target} 很友善地和你讨论了起来。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 2: 送礼分寸
+                () => {
+                    narrate(`🎁 你偶然得知 ${target} 的生日快到了，打算送一份礼物。`, 'event');
+                    const choices = [
+                        { text: '手工礼物 + 手写信 (走心)' },
+                        { text: '实用礼物 (书籍/耳机)' },
+                        { text: '名牌礼物 (彩妆/潮鞋)' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 8, '走心礼物');
+                            modAttr('mood', 5, '用心');
+                            modAttr('money', -50, '手工');
+                            narrate(`你熬夜制作了一份手工礼物，还写了一封真挚的信。 ${target} 收到后非常感动。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 4, '实用礼物');
+                            modAttr('money', -200, '礼物');
+                            narrate(`你挑选了一本对方感兴趣的书， ${target} 很惊喜，说这正是他想要的。`, 'dm');
+                        } else {
+                            modNpcLike(target, 2, '名牌礼物');
+                            modAttr('money', -500, '高价');
+                            if (G.origin === '农村低保' || G.origin === '工薪家庭') modAttr('mood', -5, '经济压力');
+                            narrate(`你咬牙买了名牌礼物， ${target} 虽然开心，但似乎有些过意不去。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 3: 当众社交
+                () => {
+                    narrate(`👥 校园路上，你遇到几个同班同学， ${target} 也在其中。`, 'event');
+                    const choices = [
+                        { text: '自然打招呼，大方介绍' },
+                        { text: '略显紧张，简单点头' },
+                        { text: '刻意保持距离，假装普通同学' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 3, '大方');
+                            modAttr('reputation', 3, '社交加分');
+                            narrate(`你笑着和所有人打招呼，还和 ${target} 聊了几句，大家都很愉快。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 0, '平淡');
+                            narrate(`你点点头， ${target} 也礼貌回应，然后各自离开。`, 'dm');
+                        } else {
+                            modNpcLike(target, -5, '刻意疏远');
+                            modAttr('mood', -3, '失落');
+                            narrate(`你故意走开， ${target} 的眼神里闪过一丝不解。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 4: 口味分歧
+                () => {
+                    narrate(`🍲 你约 ${target} 一起吃饭，点菜时发现你们口味不太一样。`, 'event');
+                    const choices = [
+                        { text: '主动点鸳鸯锅/双拼，照顾对方' },
+                        { text: '坚持自己的口味' },
+                        { text: '让对方全权决定' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 5, '体贴');
+                            modAttr('eq', 2, '情商');
+                            narrate(`你提议点鸳鸯锅， ${target} 眼睛一亮，说“你真细心！”。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, -3, '固执');
+                            modAttr('mood', -2, '不愉快');
+                            narrate(`你坚持要全辣， ${target} 虽然没说什么，但吃得很少。`, 'dm');
+                        } else {
+                            modNpcLike(target, 1, '随和');
+                            narrate(`你让 ${target} 点菜，对方点了几个你不太喜欢的菜，但你也没说什么。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 5: 异性边界
+                () => {
+                    narrate(`👫 约会途中，你碰巧遇到 ${target} 的异性好友。`, 'event');
+                    const choices = [
+                        { text: '礼貌回应，大方寒暄' },
+                        { text: '保持沉默，略显尴尬' },
+                        { text: '追问对方和好友的关系' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 4, '大方');
+                            modAttr('reputation', 2, '社交');
+                            narrate(`你主动打招呼，和对方聊了几句， ${target} 对你投来赞许的目光。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, -1, '尴尬');
+                            narrate(`你沉默不语，气氛有些尴尬， ${target} 似乎有些失望。`, 'dm');
+                        } else {
+                            modNpcLike(target, -6, '过度追问');
+                            modAttr('mood', -4, '猜疑');
+                            narrate(`你不断追问他们的关系， ${target} 的脸色越来越难看。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 6: 约会迟到
+                () => {
+                    narrate(`⏰ 你约了 ${target} 见面，但路上堵车，迟到了15分钟。`, 'event');
+                    const choices = [
+                        { text: '提前买好饮品，真诚道歉' },
+                        { text: '口头道歉，没有补偿' },
+                        { text: '抱怨交通/室友，推卸责任' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 5, '真诚道歉');
+                            modAttr('money', -30, '饮品');
+                            modAttr('mood', 3, '被谅解');
+                            narrate(`你气喘吁吁地跑来，手里拿着对方喜欢的奶茶， ${target} 的气瞬间消了。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, -2, '敷衍道歉');
+                            modAttr('mood', -2, '愧疚');
+                            narrate(`你简单说了句“抱歉”， ${target} 虽然没说什么，但明显不太高兴。`, 'dm');
+                        } else {
+                            modNpcLike(target, -8, '推卸责任');
+                            modAttr('mood', -5, '争吵');
+                            narrate(`你抱怨路况和室友， ${target} 冷冷地说“你从来都不在乎时间”。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 7: 拍照互动
+                () => {
+                    narrate(`📸 你们路过一个网红打卡点， ${target} 拿出手机想拍照。`, 'event');
+                    const choices = [
+                        { text: '主动帮对方拍照，询问喜好' },
+                        { text: '表示不喜欢拍照，拒绝' },
+                        { text: '抓拍丑照开玩笑' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 4, '耐心拍照');
+                            modAttr('mood', 3, '愉快');
+                            narrate(`你认真帮 ${target} 拍了好几张，对方特别满意，笑容灿烂。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, -3, '拒绝');
+                            modAttr('mood', -2, '扫兴');
+                            narrate(`你摆摆手说“我不喜欢拍照”， ${target} 有些扫兴地放下了手机。`, 'dm');
+                        } else {
+                            modNpcLike(target, -5, '玩笑过度');
+                            modAttr('mood', -3, '尴尬');
+                            narrate(`你抓拍了一张对方的丑照哈哈大笑， ${target} 脸都红了。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+                // 8: 家庭干预 (学业平衡)
+                () => {
+                    if (G.loveStatus !== '恋爱中') {
+                        narrate('📞 父母打来电话，关心你的学业和生活。', 'event');
+                        const choices = [
+                            { text: '认真汇报，让父母放心' },
+                            { text: '敷衍几句，不想多聊' },
+                            { text: '提到最近在谈恋爱' },
+                        ];
+                        showChoices(choices, (idx) => {
+                            if (idx === 0) {
+                                modAttr('mood', 2, '父母放心');
+                                modAttr('reputation', 1, '家庭和谐');
+                                narrate('你和父母聊了很久，他们对你很满意。', 'dm');
+                            } else if (idx === 1) {
+                                modAttr('mood', -1, '敷衍');
+                                narrate('你匆匆挂了电话，父母有些失落。', 'dm');
+                            } else {
+                                if (ORIGIN_CONFIG[G.origin]?.parentInterfere > 0.5) {
+                                    modAttr('mood', -5, '父母反对');
+                                    narrate('父母听说你恋爱了，非常担忧，劝你以学业为重。', 'event');
+                                } else {
+                                    modAttr('mood', 3, '父母理解');
+                                    narrate('父母很开明，说“只要不影响学习就好”。', 'event');
+                                }
+                            }
+                            removeChoices();
+                            flushResults();
+                            weekSettleEnd();
+                        });
+                        return;
+                    }
+                    // 如果是恋爱中，触发学业平衡事件
+                    narrate(`📚 你最近因为恋爱有些分心，期中考试成绩不太理想。`, 'event');
+                    const choices = [
+                        { text: '和恋人商量，互相督促学习' },
+                        { text: '减少约会时间，专注复习' },
+                        { text: '继续维持现状，相信能兼顾' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(G.loverName, 3, '共同进步');
+                            modAttr('gpa', 0.05, '互相督促');
+                            modAttr('mood', 3, '安心');
+                            narrate(`你和 ${G.loverName} 约定一起上自习，效率高了很多。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(G.loverName, -2, '减少见面');
+                            modAttr('gpa', 0.08, '专注学习');
+                            modAttr('mood', -2, '想念');
+                            narrate(`你告诉对方需要专心复习，虽然有些不舍，但成绩有了起色。`, 'dm');
+                        } else {
+                            modAttr('gpa', -0.05, '分心');
+                            modAttr('mood', -2, '焦虑');
+                            narrate(`你觉得可以兼顾，但考试结果并不理想，开始有些焦虑。`, 'dm');
+                        }
+                        removeChoices();
+                        flushResults();
+                        weekSettleEnd();
+                    });
+                },
+            ];
+
+            const evt = events[eventType];
+            if (evt) evt();
+            else {
+                narrate('🌤️ 这周平静地过去了。', 'system');
+                weekSettleEnd();
+            }
+            G.eventCooldown = 1; // 冷却1回合
+        }
+
+        // ============================================================
+        //  结局系统
+        // ============================================================
+
+        function triggerEnding() {
+            if (G.isGameOver) return;
+            G.isGameOver = true;
+            let loveEnding = '', careerEnding = '', finalEnding = '';
+            if (G.loveStatus === '恋爱中' && G.loverName) {
+                const like = G.npcLikes[G.loverName] || 0;
+                if (like >= 80) loveEnding = '初恋走到毕业 💕';
+                else if (like >= 60) loveEnding = '平淡相守，未来未知 💗';
+                else loveEnding = '感情渐淡，毕业即分手 💔';
+            } else if (G.loveStatus === '分手') loveEnding = '遗憾分手，各奔前程 💔';
+            else if (G.currentTarget && G.npcLikes[G.currentTarget] >= 60) loveEnding = '全程暗恋，从未告白 🌙';
+            else loveEnding = '专注自我，独行四年 🌟';
+
+            if (G.gpa >= 3.5) careerEnding = '保研上岸 / 奖学金双丰收 📚';
+            else if (G.gpa >= 2.5) careerEnding = '顺利毕业，普通就业 🎓';
+            else if (G.gpa >= 1.5) careerEnding = '多门挂科，勉强毕业 ⚠️';
+            else careerEnding = '学业荒废，延毕风险 🚨';
+
+            const endings = [
+                '圆满青春：初恋相伴 + 保研成功 ✨',
+                '独自前行：分手之后独自上岸 💪',
+                '平淡散场：短暂初恋，普通毕业 🌅',
+                '恋爱优先：为爱放弃深造，异地同行 💞',
+                '单身学霸：全程无恋爱，拿奖保研 🏆',
+                '虚度四年：感情内耗，挂科分手 🌧️',
+                '双向成长：互相督促，双双拿offer 🌈',
+                '青涩遗憾：暗恋四年，孤身毕业 🌙',
+            ];
+            if (loveEnding.includes('初恋走到毕业') && careerEnding.includes('保研')) finalEnding = endings[0];
+            else if (loveEnding.includes('遗憾分手') && careerEnding.includes('保研')) finalEnding = endings[1];
+            else if (loveEnding.includes('平淡相守') && careerEnding.includes('顺利毕业')) finalEnding = endings[2];
+            else if (loveEnding.includes('初恋走到毕业') && careerEnding.includes('普通就业')) finalEnding = endings[3];
+            else if (loveEnding.includes('专注自我') && careerEnding.includes('保研')) finalEnding = endings[4];
+            else if (loveEnding.includes('感情渐淡') && careerEnding.includes('挂科')) finalEnding = endings[5];
+            else if (loveEnding.includes('初恋走到毕业') && careerEnding.includes('奖学金')) finalEnding = endings[6];
+            else if (loveEnding.includes('全程暗恋') && careerEnding.includes('普通就业')) finalEnding = endings[7];
+            else finalEnding = `${loveEnding} · ${careerEnding}`;
+
+            narrate('🏁 ===== 游戏结束 =====', 'dm');
+            narrate(`📖 结局：${finalEnding}`, 'event');
+            narrate(`💬 ${loveEnding}`, 'system');
+            narrate(`📚 ${careerEnding}`, 'system');
+            narrate(`📊 总回合：${G.round} 周`, 'system');
+            narrate(`❤️ 最终好感：${G.loverName ? G.npcLikes[G.loverName]||0 : '无'}`, 'system');
+            narrate(`📈 最终绩点：${G.gpa.toFixed(2)}`, 'system');
+            narrate('感谢游玩 💗 点击「开始游戏」重新体验。', 'dm');
+            document.getElementById('btnStart').textContent = '🔄 重新开始';
+            updateUI();
+        }
+
+        // ============================================================
+        //  开局流程
+        // ============================================================
+
+        function startSetup() {
+            G.isInSetup = true;
+            G.setupStep = 0;
+            G.setupData = {};
+            narrateClear();
+            narrate('🌸✨ 欢迎来到完整故事版', 'dm');
+            narrate('📋 请依次回答以下问题，创建你的角色。', 'dm');
+            askNextSetup();
+        }
+
+        const setupQuestions = [
+            { id: 'name', text: '1. 你的姓名是？', type: 'input', default: '小柠' },
+            { id: 'gender', text: '2. 你的性别是？', type: 'choice', options: ['男', '女'] },
+            { id: 'origin', text: '3. 你的出身是？', type: 'choice', options: ['小镇普通家庭', '城市中产', '工薪家庭', '小康独子', '农村低保'] },
+            { id: 'difficulty', text: '4. 选择游戏难度：', type: 'choice', options: ['休闲', '标准', '硬核', '现实'] },
+            { id: 'uniType', text: '5. 院校类型：', type: 'choice', options: ['综合本科', '理工类院校', '文科院校', '艺术类院校'] },
+            { id: 'orientation', text: '6. 恋爱取向：', type: 'choice', options: ['不限', '仅异性', '仅同性'] },
+            { id: 'descMode', text: '7. 描写模式：', type: 'choice', options: ['详细细腻', '含蓄留白'] },
+            { id: 'major', text: '8. 专业类别：', type: 'choice', options: ['文科', '理科', '工科', '艺术', '医学'] },
+        ];
+
+        function askNextSetup() {
+            if (G.setupStep >= setupQuestions.length) { finishSetup(); return; }
+            const q = setupQuestions[G.setupStep];
+            narrate(`📌 ${q.text}`, 'dm');
+            if (q.type === 'input') {
+                const val = prompt(q.text, q.default || '');
+                if (val !== null && val.trim()) G.setupData[q.id] = val.trim();
+                else G.setupData[q.id] = q.default || '小柠';
+                G.setupStep++;
+                askNextSetup();
+            } else if (q.type === 'choice') {
+                const choices = q.options.map(opt => ({ text: opt }));
+                showChoices(choices, (idx) => {
+                    G.setupData[q.id] = q.options[idx];
+                    G.setupStep++;
+                    removeChoices();
+                    askNextSetup();
+                });
+            }
+        }
+
+        function finishSetup() {
+            const d = G.setupData;
+            G.name = d.name || '小柠';
+            G.gender = d.gender || '男';
+            G.origin = d.origin || '小镇普通家庭';
+            G.difficulty = d.difficulty || '标准';
+            G.uniType = d.uniType || '综合本科';
+            G.orientation = d.orientation || '不限';
+            G.descMode = d.descMode || '详细细腻';
+            G.major = d.major || '文科';
+
+            const base = ORIGIN_CONFIG[G.origin] || { moneyBase: 1500, moneyBonus: 0 };
+            G.money = base.moneyBase + base.moneyBonus + rand(0, 400);
+            G.appearance = rand(65, 85);
+            G.iq = rand(50, 75);
+            G.eq = rand(45, 70);
+            G.speech = rand(45, 70);
+            G.sport = rand(40, 75);
+            G.lucky = rand(30, 70);
+            G.mood = rand(60, 85);
+            G.health = rand(70, 90);
+            G.style = rand(55, 80);
+            G.gpa = 2.0 + Math.random() * 0.8;
+            G.loveExp = 0;
+            G.tired = 0;
+            G.fame = 10;
+            G.reputation = 50;
+            G.month = 1;
+
+            generateNPCs();
+            let best = null, bestLike = -1;
+            for (const [name, like] of Object.entries(G.npcLikes)) {
+                if (like > bestLike) { bestLike = like; best = name; }
+            }
+            G.currentTarget = best;
+
+            G.isInSetup = false;
+            G.round = 0;
+            G.grade = 1;
+            G.weekInGrade = 0;
+            G.loveStatus = '单身';
+            G.isGameOver = false;
+            G.weekHours = 12;
+
+            narrate('✅ 角色创建完成！', 'dm');
+            narrate(`👤 ${G.name} · ${G.gender} · ${G.origin} · ${G.major} · ${G.difficulty}`, 'system');
+            narrate(`💖 可攻略NPC：${Object.keys(G.npcLikes).join('、')}`, 'system');
+            narrate(`🎯 当前目标：${G.currentTarget} (点击状态面板NPC可切换)`, 'system');
+            narrate('📅 大一新生生活开始！每周12小时自由行动。', 'dm');
+            narrate('💡 每个行动都会展开细腻剧情，选择将影响故事走向。', 'system');
+            generateMonthlyOpinion();
+            updateUI();
+            document.getElementById('btnStart').textContent = '🔄 重新开始';
+            G.weekHours = 12;
+            setTimeout(showWeekActions, 500);
+        }
+
+        function generateNPCs() {
+            const pool = G.gender === '男' ? NPC_POOL.女 : NPC_POOL.男;
+            let selected = [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+            if (G.orientation === '仅同性') {
+                const samePool = G.gender === '男' ? NPC_POOL.男 : NPC_POOL.女;
+                selected = [...samePool].sort(() => Math.random() - 0.5).slice(0, 4);
+            }
+            G.npcList = selected;
+            G.npcLikes = {};
+            selected.forEach(npc => { G.npcLikes[npc.name] = rand(20, 40); });
+        }
+
+        // ============================================================
+        //  表白系统
+        // ============================================================
+
+        function confess() {
+            const target = G.currentTarget;
+            if (!target) {
+                narrate('💭 你还没有选定追求目标呢，点击NPC切换目标。', 'system');
+                return;
+            }
+            if (G.loveStatus === '恋爱中') {
+                narrate('💕 你已经恋爱了，专心经营现在的感情吧。', 'system');
+                return;
+            }
+            const like = G.npcLikes[target] || 0;
+            if (like < 61) {
+                narrate(`😅 对 ${target} 的好感还不够 (${Math.floor(like)})，再培养培养。`, 'system');
+                return;
+            }
+            narrate(`💌 你决定向 ${target} 表白！`, 'dm');
+            const choices = [
+                { text: '💐 浪漫表白：准备鲜花和情书' },
+                { text: '🗣️ 直接告白：当面说出心意' },
+                { text: '📱 线上表白：发消息说出感情' },
+            ];
+            showChoices(choices, (idx) => {
+                let baseChance = 0.5 + (G.speech - 50) * 0.005 + (G.lucky - 50) * 0.003 + (G.appearance - 60) * 0.01;
+                baseChance = clamp(baseChance, 0.1, 0.95);
+                if (idx === 0) baseChance += 0.15;
+                else if (idx === 1) baseChance += 0.05;
+                else baseChance -= 0.1;
+                const success = Math.random() < baseChance;
+                if (success) {
+                    G.loveStatus = '恋爱中';
+                    G.loverName = target;
+                    G.isDating = true;
+                    modNpcLike(target, 10, '表白成功 💕');
+                    modAttr('mood', 20, '恋爱喜悦');
+                    modAttr('loveExp', 5, '初恋经验');
+                    narrate(`🎉 表白成功！${target} 接受了你的心意！你们紧紧相拥。`, 'event');
+                } else {
+                    modNpcLike(target, -10, '表白被拒');
+                    modAttr('mood', -15, '失恋打击');
+                    narrate(`😢 表白被 ${target} 委婉拒绝了... 你有些失落。`, 'event');
+                }
+                removeChoices();
+                flushResults();
+                updateUI();
+                weekSettleEnd();
+            });
+        }
+
+        // ============================================================
+        //  每周行动系统 (完整剧情)
+        // ============================================================
+
+        function showWeekActions() {
+            if (G.isGameOver || G.isInSetup || G.waitingChoice || G.inDateFlow) return;
+            if (G.weekHours <= 0) {
+                narrate('⏰ 本周时间用完了！进入下周。', 'system');
+                weekSettle();
+                return;
+            }
+            const actions = [
+                { id: 1, text: '📚 图书馆刷题复习', cost: 3, money: 0 },
+                { id: 2, text: '🏃 操场运动健身', cost: 2, money: 0 },
+                { id: 3, text: '👔 学习穿搭/约会礼仪', cost: 1, money: 100 },
+                { id: 4, text: '💬 主动搭讪心动对象', cost: 2, money: 30 },
+                { id: 5, text: '🍻 和室友聚餐唠嗑', cost: 2, money: 100 },
+                { id: 6, text: '🍽️ 双人校外正餐 (约会)', cost: 4, money: 150 },
+                { id: 7, text: '🎭 社团活动团建', cost: 3, money: 50 },
+                { id: 8, text: '😴 独处休息睡觉', cost: 3, money: 0 },
+                { id: 9, text: '💼 兼职打工', cost: 4, money: 0 },
+                { id: 10, text: '🎁 准备礼物', cost: 2, money: 200 },
+                { id: 11, text: '📱 刷校园论坛/朋友圈', cost: 1, money: 0 },
+                { id: 12, text: '📝 小组作业搭档协作', cost: 2, money: 0 },
+                { id: 13, text: '🚶 短途周边一日游', cost: 6, money: 500 },
+                { id: 14, text: '🎤 参加校园晚会/竞赛', cost: 3, money: 50 },
+                { id: 15, text: '💞 化解感情矛盾', cost: 2, money: 30 },
+                { id: 16, text: '💌 向心动对象表白', cost: 1, money: 0 },
+            ];
+            const available = actions.filter(a => a.cost <= G.weekHours);
+            if (available.length === 0) {
+                narrate('⏰ 剩余时间不足，进入下周。', 'system');
+                weekSettle();
+                return;
+            }
+            narrate(`📅 第 ${G.round+1} 周 · 剩余 ${G.weekHours}h · 选择行动 (目标: ${G.currentTarget || '无'}):`, 'dm');
+            const choices = available.map(a => ({ text: `${a.text} (${a.cost}h, ¥${a.money})`, action: a }));
+            showChoices(choices, (idx) => {
+                const action = choices[idx].action;
+                removeChoices();
+                G.weekHours -= action.cost;
+                if (action.money > 0) modAttr('money', -action.money, action.text);
+                const scene = actionScenes[action.id];
+                if (scene) scene(action);
+                else {
+                    narrate(`⏳ 你选择了 ${action.text}，但还没有剧情，先跳过。`, 'system');
+                    afterAction();
+                }
+            });
+        }
+
+        // ---------- 所有行动剧情 (带故事感) ----------
+        const actionScenes = {
+
+            1: (action) => {
+                const target = G.currentTarget;
+                const like = target ? G.npcLikes[target] || 0 : 0;
+                narrate(`📖 你走进图书馆，空气中弥漫着书页的香气。你选了个靠窗的位置，阳光洒在桌面上。${target ? '你注意到 ' + target + ' 在不远处认真看书。' : '四周很安静，只有翻书声。'}`, 'dm');
+                let choices = [];
+                if (target && like >= 30) {
+                    choices = [
+                        { text: '专注刷题，互不打扰' },
+                        { text: '主动借笔记给对方，搭话' },
+                        { text: '偷偷观察对方，心不在焉' },
+                    ];
+                } else if (target && like < 30) {
+                    choices = [
+                        { text: '专注刷题，互不打扰' },
+                        { text: '远远看一眼，不敢打扰' },
+                        { text: '换个远离对方的位置' },
+                    ];
+                } else {
+                    choices = [
+                        { text: '专注刷题，高效学习' },
+                        { text: '和旁边的同学交流' },
+                        { text: '看手机分心' },
+                    ];
+                }
+                showChoices(choices, (idx) => {
+                    if (target && like >= 30) {
+                        if (idx === 0) {
+                            modAttr('iq', 2, '专注刷题');
+                            modAttr('gpa', 0.05, '复习');
+                            modAttr('tired', 2, '学习疲劳');
+                            narrate('你沉浸在题海中，时间飞逝，效率极高。', 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 3, '主动搭话');
+                            modAttr('speech', 1, '交流');
+                            modAttr('iq', 1, '讨论');
+                            narrate(`你鼓起勇气向 ${target} 借笔记，对方微笑着递过来，你们还聊了一会儿课程内容。`, 'dm');
+                        } else {
+                            modAttr('mood', -2, '分心');
+                            modAttr('iq', -1, '分心');
+                            narrate('你总是忍不住偷看对方，手里的笔半天没动。', 'dm');
+                        }
+                    } else if (target && like < 30) {
+                        if (idx === 0) {
+                            modAttr('iq', 2, '专注');
+                            modAttr('gpa', 0.05, '复习');
+                            modAttr('tired', 2, '学习疲劳');
+                            narrate('你埋头苦读，把注意力都放在书本上。', 'dm');
+                        } else if (idx === 1) {
+                            modAttr('mood', -1, '胆怯');
+                            narrate('你偷偷看了几眼，还是没敢上前。', 'dm');
+                        } else {
+                            modAttr('mood', 1, '避开');
+                            narrate('你换到了另一个角落，远离了那份让你心跳加速的视线。', 'dm');
+                        }
+                    } else {
+                        if (idx === 0) {
+                            modAttr('iq', 2, '专注');
+                            modAttr('gpa', 0.05, '复习');
+                            modAttr('tired', 2, '学习疲劳');
+                            narrate('你高效地完成了复习，心中充满成就感。', 'dm');
+                        } else if (idx === 1) {
+                            modAttr('speech', 1, '交流');
+                            modAttr('iq', 1, '讨论');
+                            narrate('你和旁边的同学交流了学习心得，收获颇丰。', 'dm');
+                        } else {
+                            modAttr('mood', -1, '分心');
+                            narrate('你刷了会儿手机，时间悄悄溜走。', 'dm');
+                        }
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            2: (action) => {
+                const target = G.currentTarget;
+                const like = target ? G.npcLikes[target] || 0 : 0;
+                narrate(`🏃 傍晚的操场微风拂面，夕阳把天空染成橘红色。${target ? '你看到 ' + target + ' 正在跑道上慢跑，身影在余晖中格外好看。' : '很多同学在运动，充满了青春气息。'}`, 'dm');
+                let choices = [];
+                if (target && like >= 40) {
+                    choices = [
+                        { text: '加入对方一起运动' },
+                        { text: '自己独自跑步，保持距离' },
+                        { text: '坐在看台上休息，看对方运动' },
+                    ];
+                } else if (target && like < 40) {
+                    choices = [
+                        { text: '自己独自跑步' },
+                        { text: '远远看对方一眼，然后离开' },
+                        { text: '坐在看台上休息' },
+                    ];
+                } else {
+                    choices = [
+                        { text: '跑步锻炼' },
+                        { text: '散步放松' },
+                        { text: '看台休息' },
+                    ];
+                }
+                showChoices(choices, (idx) => {
+                    if (target && like >= 40) {
+                        if (idx === 0) {
+                            modNpcLike(target, 4, '一起运动');
+                            modAttr('sport', 2, '运动');
+                            modAttr('health', 2, '运动健康');
+                            modAttr('tired', 1, '运动疲劳');
+                            narrate(`你和 ${target} 并肩跑步，偶尔交流几句，呼吸在晚风里交织。`, 'dm');
+                        } else if (idx === 1) {
+                            modAttr('sport', 1, '独自运动');
+                            modAttr('health', 1, '运动');
+                            modAttr('tired', 1, '运动疲劳');
+                            narrate('你独自跑了几圈，汗水滑落，心情舒畅。', 'dm');
+                        } else {
+                            modAttr('mood', 1, '放松');
+                            narrate('你坐在看台上，看着夕阳和奔跑的身影，内心平静。', 'dm');
+                        }
+                    } else if (target && like < 40) {
+                        if (idx === 0) {
+                            modAttr('sport', 1, '运动');
+                            modAttr('health', 1, '运动');
+                            narrate('你独自跑步，锻炼了身体。', 'dm');
+                        } else if (idx === 1) {
+                            modAttr('mood', -1, '胆怯');
+                            narrate('你远远看了一眼，然后默默离开。', 'dm');
+                        } else {
+                            modAttr('mood', 1, '休息');
+                            narrate('你在看台上坐了一会儿，很是惬意。', 'dm');
+                        }
+                    } else {
+                        if (idx === 0) {
+                            modAttr('sport', 2, '运动');
+                            modAttr('health', 2, '运动健康');
+                            narrate('你跑了几圈，出了一身汗，感觉充满活力。', 'dm');
+                        } else if (idx === 1) {
+                            modAttr('mood', 2, '散步');
+                            narrate('你慢慢散步，晚风轻拂，很放松。', 'dm');
+                        } else {
+                            modAttr('mood', 1, '休息');
+                            narrate('你坐在看台上，看着天空发呆。', 'dm');
+                        }
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            3: (action) => {
+                narrate('👔 你站在镜子前，翻看着穿搭教程，室友们在一旁出主意。你想尝试一种新风格，给身边的人一个惊喜。', 'dm');
+                const choices = [
+                    { text: '选择简约清新的风格' },
+                    { text: '选择潮流酷炫的风格' },
+                    { text: '选择文艺复古的风格' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('style', 3, '简约风格');
+                        modAttr('mood', 2, '满意');
+                        narrate('你换上了一身简洁干净的衣服，看起来清爽自然，室友们都说好看。', 'dm');
+                    } else if (idx === 1) {
+                        modAttr('style', 2, '潮流风格');
+                        modAttr('money', -50, '配饰');
+                        narrate('你搭配了潮流的配饰，回头率直线上升。', 'dm');
+                    } else {
+                        modAttr('style', 3, '文艺风格');
+                        modAttr('mood', 2, '文艺范');
+                        narrate('你穿上复古的衬衫，气质凸显，仿佛从画中走出来的少年。', 'dm');
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            4: (action) => {
+                const target = G.currentTarget;
+                if (!target) { narrate('😅 没有目标，先选一个吧。', 'system'); afterAction(); return; }
+                const like = G.npcLikes[target] || 0;
+                narrate(`💬 你在奶茶店看到 ${target} 独自坐着，手里捧着一本书，神情专注。你深吸一口气，走了过去。`, 'dm');
+                let choices = [];
+                if (like >= 50) {
+                    choices = [
+                        { text: '自然地打招呼，聊聊最近' },
+                        { text: '直接邀请对方一起喝奶茶' },
+                        { text: '紧张得说不出话' },
+                    ];
+                } else if (like >= 30) {
+                    choices = [
+                        { text: '简单地打个招呼' },
+                        { text: '买杯奶茶送给对方' },
+                        { text: '犹豫了一下，转身离开' },
+                    ];
+                } else {
+                    choices = [
+                        { text: '远远地看一眼' },
+                        { text: '假装没看见，走开' },
+                        { text: '上去打个招呼，但很紧张' },
+                    ];
+                }
+                showChoices(choices, (idx) => {
+                    if (like >= 50) {
+                        if (idx === 0) {
+                            const gain = rand(2, 5) + (G.speech - 50) * 0.05;
+                            modNpcLike(target, gain, '自然搭讪');
+                            modAttr('speech', 1, '交流');
+                            modAttr('mood', 3, '愉快');
+                            modAttr('money', -30, '奶茶');
+                            narrate(`你自然地坐下，和 ${target} 聊起了近况，对方笑容满面，气氛轻松。`, 'dm');
+                        } else if (idx === 1) {
+                            const gain = rand(3, 6) + (G.style - 60) * 0.03;
+                            modNpcLike(target, gain, '主动邀约');
+                            modAttr('mood', 4, '开心');
+                            modAttr('money', -40, '奶茶');
+                            narrate(`你请 ${target} 喝奶茶，对方欣然接受，还主动聊起了自己的兴趣爱好。`, 'dm');
+                        } else {
+                            modNpcLike(target, -3, '紧张冷场');
+                            modAttr('mood', -2, '尴尬');
+                            narrate(`你太紧张了，说话结结巴巴， ${target} 有些尴尬地笑了笑。`, 'dm');
+                        }
+                    } else if (like >= 30) {
+                        if (idx === 0) {
+                            modNpcLike(target, 1, '简单招呼');
+                            narrate(`你简单打了个招呼，对方也礼貌回应。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 3, '送奶茶');
+                            modAttr('money', -30, '奶茶');
+                            narrate(`你买了杯奶茶递过去，对方有些惊喜，说“谢谢”。`, 'dm');
+                        } else {
+                            modAttr('mood', -1, '退缩');
+                            narrate(`你犹豫了一下，最终还是转身离开。`, 'dm');
+                        }
+                    } else {
+                        if (idx === 0) {
+                            modAttr('mood', 1, '观望');
+                            narrate(`你远远看了一眼，然后走开了。`, 'dm');
+                        } else if (idx === 1) {
+                            narrate(`你假装没看见，快步走过。`, 'dm');
+                        } else {
+                            modNpcLike(target, -1, '紧张');
+                            modAttr('mood', -1, '尴尬');
+                            narrate(`你上前打了个招呼，但太紧张了，气氛有些冷。`, 'dm');
+                        }
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            5: (action) => {
+                narrate('🍻 周末晚上，你和室友们一起去校外的小馆子聚餐。大家围坐一桌，热气腾腾的饭菜上桌，聊起各种八卦和趣事。', 'dm');
+                const choices = [
+                    { text: '主动分享自己的感情近况' },
+                    { text: '听室友们聊八卦，不插话' },
+                    { text: '提议玩游戏，活跃气氛' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('mood', 5, '分享快乐');
+                        modAttr('reputation', 2, '室友信任');
+                        if (G.currentTarget) modNpcLike(G.currentTarget, 1, '室友助攻');
+                        narrate('你打开了话匣子，室友们纷纷给你出主意，气氛热闹非凡。', 'dm');
+                    } else if (idx === 1) {
+                        modAttr('mood', 2, '放松');
+                        narrate('你安静地听着，偶尔笑一笑，这样的时光很惬意。', 'dm');
+                    } else {
+                        modAttr('mood', 4, '活跃气氛');
+                        modAttr('reputation', 2, '社交加分');
+                        narrate('你提议玩桌游，大家玩得不亦乐乎，笑声不断。', 'dm');
+                    }
+                    modAttr('money', -action.money, '聚餐');
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            6: (action) => {
+                if (!G.currentTarget) { narrate('😅 没有目标，自己去吃火锅吧。', 'system'); afterAction(); return; }
+                startDateFlow();
+            },
+
+            7: (action) => {
+                narrate('🎭 社团活动室里，大家正在布置场地准备团建。你看到熟悉的学长学姐们忙碌的身影。', 'dm');
+                const choices = [
+                    { text: '主动帮忙布置，积极融入' },
+                    { text: '站在一旁观望，不主动参与' },
+                    { text: '找机会和社团里的心动对象聊天' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('fame', 3, '社团活跃');
+                        modAttr('reputation', 2, '乐于助人');
+                        modAttr('mood', 3, '充实');
+                        narrate('你帮忙搬桌椅、挂彩带，学长学姐对你赞不绝口。', 'dm');
+                    } else if (idx === 1) {
+                        modAttr('mood', -1, '无聊');
+                        narrate('你站在一旁，有些格格不入。', 'dm');
+                    } else {
+                        const target = G.currentTarget;
+                        if (target && G.npcList.some(n => n.name === target)) {
+                            modNpcLike(target, 3, '社团互动');
+                            modAttr('mood', 3, '开心');
+                            narrate(`你和 ${target} 聊起了社团的趣事，关系更近了。`, 'dm');
+                        } else {
+                            narrate('你试图和某人搭话，但对方似乎不太感兴趣。', 'dm');
+                        }
+                    }
+                    modAttr('money', -action.money, '社团AA');
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            8: (action) => {
+                narrate('😴 你回到宿舍，室友们有的在打游戏，有的在聊天。你爬上床，感觉全身疲惫。', 'dm');
+                const choices = [
+                    { text: '戴上耳机，早点入睡' },
+                    { text: '和室友们聊会儿天再睡' },
+                    { text: '刷一会儿手机再睡' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('health', 4, '充足睡眠');
+                        modAttr('tired', -4, '休息');
+                        modAttr('mood', 2, '休息好');
+                        narrate('你戴上耳机，很快进入了梦乡，睡得很安稳。', 'dm');
+                    } else if (idx === 1) {
+                        modAttr('mood', 3, '室友聊天');
+                        modAttr('reputation', 1, '宿舍融洽');
+                        narrate('你和室友们聊了聊最近的趣事，笑声不断。', 'dm');
+                    } else {
+                        modAttr('tired', -1, '刷手机');
+                        modAttr('health', -1, '熬夜');
+                        narrate('你刷手机到深夜，第二天有些无精打采。', 'dm');
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            9: (action) => {
+                narrate('💼 你来到校外的奶茶店，换上工装，开始兼职。今天客人很多，你忙得团团转。', 'dm');
+                const choices = [
+                    { text: '认真工作，服务周到' },
+                    { text: '趁空暇和同事聊天' },
+                    { text: '偷偷摸鱼，玩手机' },
+                ];
+                showChoices(choices, (idx) => {
+                    const earn = rand(300, 600);
+                    if (idx === 0) {
+                        modAttr('money', earn, '兼职收入');
+                        modAttr('tired', 3, '工作疲劳');
+                        modAttr('reputation', 1, '工作认真');
+                        narrate(`你忙前忙后，顾客和老板都夸你勤快，赚了 ¥${earn}。`, 'dm');
+                    } else if (idx === 1) {
+                        modAttr('money', earn * 0.8, '兼职收入');
+                        modAttr('tired', 2, '工作疲劳');
+                        modAttr('mood', 2, '聊天愉快');
+                        narrate(`你和同事聊得很投机，赚了 ¥${earn*0.8}。`, 'dm');
+                    } else {
+                        modAttr('money', earn * 0.5, '兼职收入');
+                        modAttr('tired', 1, '摸鱼');
+                        modAttr('reputation', -2, '偷懒');
+                        narrate(`你摸鱼被老板发现，只赚了 ¥${earn*0.5}，还挨了批评。`, 'dm');
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            10: (action) => {
+                const target = G.currentTarget;
+                if (!target) { narrate('😅 没有目标，礼物先留着。', 'system'); afterAction(); return; }
+                const like = G.npcLikes[target] || 0;
+                narrate(`🎁 你走进校园礼品店，看着琳琅满目的商品，想着 ${target} 会喜欢什么。`, 'dm');
+                let choices = [];
+                if (like >= 50) {
+                    choices = [
+                        { text: '手工礼物 (走心)' },
+                        { text: '实用礼物 (中等价位)' },
+                        { text: '名牌礼物 (高价位)' },
+                    ];
+                } else {
+                    choices = [
+                        { text: '小礼物 (平价)' },
+                        { text: '不送礼物，只打招呼' },
+                    ];
+                }
+                showChoices(choices, (idx) => {
+                    if (like >= 50) {
+                        let delta = 0, cost = 0;
+                        if (idx === 0) { delta = 6; cost = 50; }
+                        else if (idx === 1) { delta = 3; cost = 150; }
+                        else { delta = 1; cost = 400; }
+                        modNpcLike(target, delta, '送礼');
+                        modAttr('money', -cost, '礼物');
+                        narrate(`你精心挑选了礼物， ${target} 收到后特别开心，说“你真好”。`, 'dm');
+                    } else {
+                        if (idx === 0) {
+                            modNpcLike(target, 2, '小礼物');
+                            modAttr('money', -30, '礼物');
+                            narrate('你送了一份小礼物，对方礼貌地收下了。', 'dm');
+                        } else {
+                            narrate('你只是打了个招呼，没有送礼物。', 'dm');
+                        }
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            11: (action) => {
+                narrate('📱 你打开校园论坛，看到有人在讨论最近的热点。你发现有一个帖子提到了你，评论褒贬不一。', 'dm');
+                const choices = [
+                    { text: '回帖澄清，理性发言' },
+                    { text: '无视，当没看见' },
+                    { text: '在评论区带节奏，开玩笑' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('reputation', 3, '理性回应');
+                        modAttr('fame', 2, '论坛活跃');
+                        narrate('你的回复有理有据，得到了很多人的认可。', 'dm');
+                    } else if (idx === 1) {
+                        narrate('你选择无视，继续刷别的帖子。', 'dm');
+                    } else {
+                        modAttr('reputation', -2, '带节奏');
+                        modAttr('fame', 1, '讨论热度');
+                        narrate('你开了个玩笑，但有人觉得你不太认真。', 'dm');
+                    }
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            12: (action) => {
+                narrate('📝 你和组员们约在图书馆讨论小组作业，但大家对任务分工有分歧，气氛有些紧张。', 'dm');
+                const choices = [
+                    { text: '主动协调，提出折中方案' },
+                    { text: '坚持自己的意见，据理力争' },
+                    { text: '随大流，不发表意见' },
+                ];
+                showChoices(choices, (idx) => {
+                    if (idx === 0) {
+                        modAttr('eq', 2, '协调能力');
+                        modAttr('reputation', 2, '团队合作');
+                        modAttr('gpa', 0.03, '作业质量');
+                        narrate('你耐心倾听各方意见，提出了一个大家都能接受的方案，作业顺利完成。', 'dm');
+                    } else if (idx === 1) {
+                        modAttr('gpa', 0.02, '坚持己见');
+                        modAttr('reputation', -1, '固执');
+                        narrate('你坚持自己的观点，虽然作业质量不错，但组员有些不满。', 'dm');
+                    } else {
+                        modAttr('gpa', -0.01, '被动');
+                        narrate('你随波逐流，作业质量一般。', 'dm');
+                    }
+                    modAttr('tired', 1, '讨论疲劳');
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            13: (action) => {
+                const target = G.currentTarget;
+                if (!target) {
+                    narrate('🚶 你一个人去周边公园散步，阳光温暖，心情不错。', 'dm');
+                    modAttr('mood', 4, '散心');
+                    modAttr('money', -action.money, '出游');
+                    afterAction();
+                    return;
+                }
+                const like = G.npcLikes[target] || 0;
+                if (like >= 40) {
+                    narrate(`🚶 你约了 ${target} 一起去古镇游玩，青石板路、小桥流水，风景如画。`, 'dm');
+                    const choices = [
+                        { text: '主动帮对方拍照，营造浪漫氛围' },
+                        { text: '并肩散步，聊聊天' },
+                        { text: '各自玩手机，有些尴尬' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(target, 6, '浪漫拍照');
+                            modAttr('mood', 5, '愉快');
+                            narrate(`你为 ${target} 拍了很多好看的照片，对方特别开心，说“你技术真好”。`, 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(target, 4, '温馨散步');
+                            modAttr('mood', 3, '惬意');
+                            narrate(`你们边走边聊，从童年聊到梦想，彼此更加了解。`, 'dm');
+                        } else {
+                            modNpcLike(target, -3, '尴尬冷场');
+                            modAttr('mood', -3, '失落');
+                            narrate(`你们各自玩手机，气氛有些尴尬。`, 'dm');
+                        }
+                        removeChoices();
+                        afterAction();
+                    });
+                } else {
+                    narrate('🚶 你独自去周边游玩，放松心情。', 'dm');
+                    modAttr('mood', 4, '散心');
+                    afterAction();
+                }
+                modAttr('money', -action.money, '出游');
+                modAttr('tired', 4, '游玩疲劳');
+            },
+
+            14: (action) => {
+                narrate('🎤 校园礼堂里灯火辉煌，今晚是迎新晚会。你决定上台展示自己的才艺，或者坐在台下当观众。', 'dm');
+                const choices = [
+                    { text: '认真准备，上台表演/参赛' },
+                    { text: '在台下当观众，默默支持' },
+                    { text: '找机会和心动对象坐在一起' },
+                ];
+                showChoices(choices, (idx) => {
+                    const win = Math.random() < 0.3;
+                    if (idx === 0) {
+                        if (win) {
+                            modAttr('fame', 8, '竞赛获奖');
+                            modAttr('mood', 10, '获奖喜悦');
+                            modAttr('money', 500, '奖金');
+                            narrate('🏆 你表现出色，赢得了全场掌声和奖金！', 'event');
+                        } else {
+                            modAttr('fame', 2, '参与');
+                            modAttr('mood', 1, '参与');
+                            narrate('你虽然没获奖，但勇气可嘉，得到了掌声。', 'dm');
+                        }
+                    } else if (idx === 1) {
+                        modAttr('mood', 2, '观看');
+                        narrate('你在台下为选手们鼓掌，度过了一个愉快的夜晚。', 'dm');
+                    } else {
+                        const target = G.currentTarget;
+                        if (target) {
+                            modNpcLike(target, 3, '并肩观看');
+                            modAttr('mood', 3, '甜蜜');
+                            narrate(`你坐在 ${target} 旁边，一起看晚会，气氛暧昧。`, 'dm');
+                        } else {
+                            narrate('你试图找人坐在一起，但没找到合适的。', 'dm');
+                        }
+                    }
+                    modAttr('money', -action.money, '活动开销');
+                    removeChoices();
+                    afterAction();
+                });
+            },
+
+            15: (action) => {
+                if (G.loveStatus === '恋爱中' && G.loverName) {
+                    narrate(`💞 你和 ${G.loverName} 之间因为一些小事产生了矛盾，你决定主动沟通。`, 'dm');
+                    const choices = [
+                        { text: '诚恳道歉，买小礼物补偿' },
+                        { text: '好好谈一谈，说出心里话' },
+                        { text: '冷战，等对方先低头' },
+                    ];
+                    showChoices(choices, (idx) => {
+                        if (idx === 0) {
+                            modNpcLike(G.loverName, 6, '道歉礼物');
+                            modAttr('mood', 5, '和解');
+                            modAttr('money', -50, '小礼物');
+                            if (G.isColdWar) { G.isColdWar = false; G.coldWarWeeks = 0; }
+                            narrate('你诚恳道歉并送了小礼物，对方原谅了你，你们和好如初。', 'dm');
+                        } else if (idx === 1) {
+                            modNpcLike(G.loverName, 4, '真诚沟通');
+                            modAttr('mood', 3, '释然');
+                            narrate('你们敞开心扉聊了聊，问题解决了，感情更深了。', 'dm');
+                        } else {
+                            modNpcLike(G.loverName, -4, '冷战升级');
+                            modAttr('mood', -5, '伤心');
+                            G.isColdWar = true;
+                            G.coldWarWeeks = 2;
+                            narrate('你选择冷战，关系更加僵化。', 'dm');
+                        }
+                        removeChoices();
+                        afterAction();
+                    });
+                } else {
+                    narrate('💭 目前没有需要化解的矛盾，你可以和室友聊聊天。', 'system');
+                    modAttr('mood', 2, '放松');
+                    afterAction();
+                }
+            },
+
+            16: (action) => {
+                confess();
+            },
+        };
+
+        // ---------- 行动结束后处理 ----------
+        function afterAction() {
+            if (G.isGameOver || G.isInSetup || G.inDateFlow) return;
+            flushResults();
+            if (G.health < 20) {
+                narrate('🏥 健康告急！强制卧床。', 'event');
+                modAttr('health', 5, '卧床');
+                G.weekHours = 0;
+                flushResults();
+            }
+            if (G.mood < 20) {
+                narrate('😔 心情低落...', 'event');
+                modAttr('mood', 5, '情绪恢复');
+                flushResults();
+            }
+            if (G.loveStatus === '恋爱中') modAttr('loveExp', 0.3, '恋爱日常');
+
+            updateUI();
+            if (G.weekHours <= 0) {
+                narrate('⏰ 本周时间用尽。', 'system');
+                weekSettle();
+            } else {
+                setTimeout(showWeekActions, 400);
+            }
+        }
+
+        // ============================================================
+        //  约会流程 (完整10个模块)
+        // ============================================================
+
+        const DATE_MODULES = [
+            // 0: 座位
+            {
+                name: '💺 座位选择',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '主动拉开对面椅子，抬手示意对方坐下' },
+                            { text: '径直走到并排卡座，拍一拍身边空位' },
+                            { text: '站在桌边不动，让对方自行挑选座位' },
+                        ];
+                    } else {
+                        return [
+                            { text: '走到对面位置坐下，笑着说面对面聊天更方便' },
+                            { text: '犹豫片刻，小声提议还是坐对面吧' },
+                            { text: '硬着头皮坐到并排位置，全程身体僵硬' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -2;
+                        else delta = 0;
+                    } else {
+                        if (idx === 0) delta = 3;
+                        else if (idx === 1) delta = 1;
+                        else delta = -3;
+                    }
+                    modNpcLike(G.currentTarget, delta, '座位选择');
+                    if (delta > 0) modAttr('mood', 2, '座位舒适');
+                    else if (delta < 0) modAttr('mood', -2, '座位尴尬');
+                    narrate(delta > 0 ? '你选了个好位置，对方看起来很满意。' : '座位选择似乎不太理想，气氛有些微妙。', 'dm');
+                }
+            },
+            // 1: 付款
+            {
+                name: '💰 付款方式',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '直接拿起账单主动结账' },
+                            { text: '主动提出本次消费 AA 分摊' },
+                            { text: '低头假装刷手机，等待对方主动买单' },
+                            { text: '抢单失败后只转一半钱款，嘴上客套不用转' },
+                        ];
+                    } else {
+                        return [
+                            { text: '主动上前结账付款' },
+                            { text: '主动提出 AA 分开结算' },
+                            { text: '和对方约定这次对方请客，下次由自己买单' },
+                            { text: '低头玩手机，不提分摊账单的事' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0, cost = 150;
+                    if (G.gender === '男') {
+                        if (idx === 0) { delta = 5; cost = 300; }
+                        else if (idx === 1) { delta = 1; cost = 150; }
+                        else if (idx === 2) { delta = -5; cost = 0; }
+                        else { delta = -2; cost = 150; }
+                    } else {
+                        if (idx === 0) { delta = 6; cost = 300; }
+                        else if (idx === 1) { delta = 3; cost = 150; }
+                        else if (idx === 2) { delta = 4; cost = 0; }
+                        else { delta = -3; cost = 0; }
+                    }
+                    modNpcLike(G.currentTarget, delta, '付款方式');
+                    modAttr('money', -cost, '用餐费用');
+                    if (delta > 0) modAttr('mood', 3, '付款愉快');
+                    else if (delta < 0) modAttr('mood', -3, '付款尴尬');
+                    narrate(delta > 0 ? '你处理得很得体，对方对你刮目相看。' : '付款环节有些小插曲，但不算太糟。', 'dm');
+                }
+            },
+            // 2: 送礼 (约会中)
+            {
+                name: '🎁 送礼分寸',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '准备手写信、手工、平价周边' },
+                            { text: '挑选书籍、耳机等中等实用物品' },
+                            { text: '购入名牌彩妆、潮鞋等高价位奢侈品' },
+                        ];
+                    } else {
+                        return [
+                            { text: '亲手制作小物件、手写长信' },
+                            { text: '挑选书籍、基础配饰等中等实用礼物' },
+                            { text: '购买球鞋、名牌配饰等高价礼品' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0, cost = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) { delta = 6; cost = 50; }
+                        else if (idx === 1) { delta = 3; cost = 150; }
+                        else { delta = 1; cost = 400; }
+                    } else {
+                        if (idx === 0) { delta = 7; cost = 50; }
+                        else if (idx === 1) { delta = 4; cost = 120; }
+                        else { delta = 2; cost = 400; }
+                    }
+                    modNpcLike(G.currentTarget, delta, '送礼');
+                    modAttr('money', -cost, '礼物开销');
+                    if (delta > 0) modAttr('mood', 2, '心意满满');
+                    else modAttr('mood', -1, '礼物尴尬');
+                    narrate(delta > 0 ? '你的礼物让对方非常感动，眼神里都是惊喜。' : '礼物可能不太合适，对方只是礼貌地笑了笑。', 'dm');
+                }
+            },
+            // 3: 肢体距离
+            {
+                name: '🤝 肢体距离',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '试探着伸手牵对方的手' },
+                            { text: '和对方保持一拳距离，仅语言交流' },
+                            { text: '刻意贴近对方，手臂频繁发生触碰' },
+                        ];
+                    } else {
+                        return [
+                            { text: '轻轻挽住对方手臂同行' },
+                            { text: '保持安全距离，正常聊天散步' },
+                            { text: '全程紧贴对方，肢体频繁触碰' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = 1;
+                        else delta = -3;
+                    } else {
+                        if (idx === 0) delta = 5;
+                        else if (idx === 1) delta = 2;
+                        else delta = -1;
+                    }
+                    modNpcLike(G.currentTarget, delta, '肢体距离');
+                    if (delta > 0) modAttr('mood', 3, '亲近感');
+                    else if (delta < 0) modAttr('mood', -3, '不适');
+                    narrate(delta > 0 ? '你们之间的距离拉近了，心跳声清晰可闻。' : '你感觉有些生疏，可能还需要更多时间。', 'dm');
+                }
+            },
+            // 4: 当众互动
+            {
+                name: '👀 当众互动',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '正常点头打招呼，保持自然距离' },
+                            { text: '当众拉住对方手臂，做出亲密举动' },
+                            { text: '刻意拉开距离，装作普通同学' },
+                        ];
+                    } else {
+                        return [
+                            { text: '大方点头打招呼，距离适中' },
+                            { text: '当众轻靠对方、挽手臂互动' },
+                            { text: '刻意走远，假装互不熟悉' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 2;
+                        else if (idx === 1) delta = 1;
+                        else delta = -4;
+                    } else {
+                        if (idx === 0) delta = 3;
+                        else if (idx === 1) delta = 2;
+                        else delta = -5;
+                    }
+                    modNpcLike(G.currentTarget, delta, '当众互动');
+                    if (delta > 0) modAttr('mood', 2, '自然');
+                    else if (delta < 0) modAttr('mood', -3, '尴尬');
+                    narrate(delta > 0 ? '你们的表现很自然，旁人投来善意的目光。' : '你感觉有些别扭，对方似乎也有些尴尬。', 'dm');
+                }
+            },
+            // 5: 异性边界
+            {
+                name: '🚫 异性边界',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '主动礼貌上前打招呼，保持分寸' },
+                            { text: '全程冷脸沉默，刻意回避对方朋友' },
+                            { text: '不停追问二人过往、日常相处细节' },
+                        ];
+                    } else {
+                        return [
+                            { text: '温和打招呼，简单寒暄几句' },
+                            { text: '低头沉默，不主动搭话回避对方朋友' },
+                            { text: '反复追问对方和异性好友的往来细节' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -3;
+                        else delta = -5;
+                    } else {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -2;
+                        else delta = -6;
+                    }
+                    modNpcLike(G.currentTarget, delta, '异性边界');
+                    if (delta > 0) modAttr('mood', 2, '大方');
+                    else if (delta < 0) modAttr('mood', -3, '猜疑');
+                    narrate(delta > 0 ? '你处理得落落大方，对方很欣赏你的态度。' : '你有些过度敏感，气氛变得紧张。', 'dm');
+                }
+            },
+            // 6: 迟到补救
+            {
+                name: '⏰ 迟到补救',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '提前买好对方喜爱饮品，主动道歉' },
+                            { text: '单纯口头道歉，无额外补偿' },
+                            { text: '把迟到原因归咎于交通、室友等外部因素' },
+                        ];
+                    } else {
+                        return [
+                            { text: '提前备好对方喜欢的奶茶主动致歉' },
+                            { text: '简单说一句抱歉，没有补偿行为' },
+                            { text: '借口堵车、宿舍耽误时间推卸责任' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) { delta = 5; modAttr('money', -30, '饮品'); }
+                        else if (idx === 1) delta = -2;
+                        else delta = -7;
+                    } else {
+                        if (idx === 0) { delta = 5; modAttr('money', -30, '奶茶'); }
+                        else if (idx === 1) delta = -2;
+                        else delta = -7;
+                    }
+                    modNpcLike(G.currentTarget, delta, '迟到补救');
+                    if (delta > 0) modAttr('mood', 3, '被谅解');
+                    else if (delta < 0) modAttr('mood', -3, '失望');
+                    narrate(delta > 0 ? '你真诚道歉并带了小礼物，对方原谅了你。' : '你的解释没有打动对方，气氛有些冷。', 'dm');
+                }
+            },
+            // 7: 口味分歧
+            {
+                name: '🍲 口味分歧',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '主动选择鸳鸯锅兼顾双方口味' },
+                            { text: '直接点全辣锅底，随口说一点辣没关系' },
+                            { text: '把锅底选择权全部交给对方，自己不发表意见' },
+                        ];
+                    } else {
+                        return [
+                            { text: '提议点鸳鸯锅，照顾对方口味' },
+                            { text: '直接选择全辣锅底，不在意对方不吃辣' },
+                            { text: '让对方决定锅底，全程沉默不表态' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 5;
+                        else if (idx === 1) delta = -3;
+                        else delta = 0;
+                    } else {
+                        if (idx === 0) delta = 5;
+                        else if (idx === 1) delta = -4;
+                        else delta = 1;
+                    }
+                    modNpcLike(G.currentTarget, delta, '口味照顾');
+                    if (delta > 0) modAttr('mood', 2, '体贴');
+                    else if (delta < 0) modAttr('mood', -2, '不悦');
+                    narrate(delta > 0 ? '你体贴的选择让对方很暖心，吃饭氛围融洽。' : '口味不合让你们都有些扫兴。', 'dm');
+                }
+            },
+            // 8: 拍照互动
+            {
+                name: '📸 拍照互动',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '主动询问喜好，为对方拍摄多张照片' },
+                            { text: '直接表明自己不喜欢拍照，拒绝拍摄' },
+                            { text: '抓拍对方丑照，当众开玩笑调侃' },
+                        ];
+                    } else {
+                        return [
+                            { text: '主动提出帮对方拍照，询问构图喜好' },
+                            { text: '直接表示不喜欢出镜，拒绝拍照' },
+                            { text: '抓拍搞怪丑照，当众打趣对方' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -2;
+                        else delta = -5;
+                    } else {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -2;
+                        else delta = -4;
+                    }
+                    modNpcLike(G.currentTarget, delta, '拍照互动');
+                    if (delta > 0) modAttr('mood', 3, '愉快');
+                    else if (delta < 0) modAttr('mood', -3, '尴尬');
+                    narrate(delta > 0 ? '你拍的照片很美，对方特别满意。' : '拍照环节不太顺利，气氛有些尴尬。', 'dm');
+                }
+            },
+            // 9: 返程
+            {
+                name: '🚶 返程方式',
+                getChoices: () => {
+                    if (G.gender === '男') {
+                        return [
+                            { text: '送到宿舍楼下，道别后及时发消息报平安' },
+                            { text: '在宿舍楼下拉扯很久，耽误对方门禁时间' },
+                            { text: '仅送至校门口，不往宿舍楼下走' },
+                        ];
+                    } else {
+                        return [
+                            { text: '送到宿舍楼下后正常道别，事后互发消息' },
+                            { text: '在楼下拖延许久，舍不得分开' },
+                            { text: '只让对方送到校门口，不用送到楼下' },
+                        ];
+                    }
+                },
+                resolve: (idx) => {
+                    let delta = 0;
+                    if (G.gender === '男') {
+                        if (idx === 0) delta = 3;
+                        else if (idx === 1) delta = -4;
+                        else delta = -1;
+                    } else {
+                        if (idx === 0) delta = 4;
+                        else if (idx === 1) delta = -2;
+                        else delta = 0;
+                    }
+                    modNpcLike(G.currentTarget, delta, '返程表现');
+                    if (delta > 0) modAttr('mood', 2, '温馨');
+                    else if (delta < 0) modAttr('mood', -2, '遗憾');
+                    narrate(delta > 0 ? '道别时依依不舍，但你知道下次还会见面。' : '道别有些仓促，心里空落落的。', 'dm');
+                }
+            },
+        ];
+
+        function startDateFlow() {
+            if (!G.currentTarget) { narrate('😅 没有目标，无法约会。', 'system'); afterAction(); return; }
+            G.inDateFlow = true;
+            const shuffled = [...DATE_MODULES].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            G.dateModules = selected;
+            G.dateIndex = 0;
+            narrate(`🌸 你约了 ${G.currentTarget} 共进晚餐，精心打扮了一番，心里既期待又紧张。`, 'dm');
+            nextDateModule();
+        }
+
+        function nextDateModule() {
+            if (G.dateIndex >= G.dateModules.length) {
+                G.inDateFlow = false;
+                narrate('💖 约会结束了！你们在路灯下告别，今晚的回忆格外美好。', 'dm');
+                G.totalDates++;
+                const bonus = rand(1, 4);
+                modNpcLike(G.currentTarget, bonus, '约会综合印象');
+                modAttr('tired', 3, '约会疲劳');
+                flushResults();
+                updateUI();
+                if (G.weekHours <= 0) {
+                    narrate('⏰ 本周时间用尽。', 'system');
+                    weekSettle();
+                } else {
+                    setTimeout(showWeekActions, 400);
+                }
+                return;
+            }
+            const module = G.dateModules[G.dateIndex];
+            narrate(`💬 ${module.name}`, 'dm');
+            const choices = module.getChoices();
+            showChoices(choices, (idx) => {
+                removeChoices();
+                module.resolve(idx);
+                flushResults();
+                G.dateIndex++;
+                setTimeout(nextDateModule, 500);
+            });
+        }
+
+        // ============================================================
+        //  按钮事件
+        // ============================================================
+
+        document.getElementById('btnStart').addEventListener('click', () => {
+            const confirmReset = G.round > 0 && !G.isGameOver ? confirm('确定要重新开始吗？当前进度将丢失。') : true;
+            if (!confirmReset) return;
+            // 重置所有状态
+            const resetState = {
+                name: '', gender: '男', origin: '小镇普通家庭', difficulty: '标准',
+                uniType: '综合本科', orientation: '不限', descMode: '详细细腻', major: '文科',
+                appearance: 70, eq: 50, mood: 70, iq: 50, style: 60, speech: 55, sport: 50,
+                lucky: 50, health: 80, money: 0, gpa: 2.0, loveExp: 0, tired: 0,
+                fame: 0, reputation: 50, heartThreshold: 50,
+                round: 0, grade: 1, weekInGrade: 0, month: 1,
+                isGameOver: false, isInSetup: true,
+                loveStatus: '单身', npcLikes: {}, npcList: [], currentTarget: null,
+                loverName: null, isDating: false, isColdWar: false, coldWarWeeks: 0,
+                breakupCount: 0, weekHours: 12,
+                opinion: '校园生活平静如水。',
+                waitingChoice: false, choiceList: [], choiceCallback: null,
+                setupStep: 0, setupData: {},
+                totalDates: 0, totalGifts: 0, totalConflicts: 0,
+                inDateFlow: false, pendingResults: [],
+                monthlyIncome: 0, monthlySpent: 0, monthStartMoney: 0,
+                eventCooldown: 0, eventHistory: [],
+            };
+            Object.assign(G, resetState);
+            document.getElementById('narrativeContent').innerHTML = '';
+            document.getElementById('btnStart').textContent = '⏳ 创建中...';
+            startSetup();
+        });
+
+        document.getElementById('btnStatus').addEventListener('click', () => {
+            if (G.isGameOver) { narrate('🏁 游戏已结束。', 'system'); return; }
+            if (G.isInSetup) { narrate('✏️ 正在创建角色。', 'system'); return; }
+            updateUI();
+            narrate('📋 已刷新状态面板。', 'system');
+        });
+
+        document.getElementById('btnEnd').addEventListener('click', () => {
+            if (G.isGameOver) { narrate('🏁 游戏已结束。', 'system'); return; }
+            if (G.isInSetup) { narrate('✏️ 请先创建角色。', 'system'); return; }
+            const confirmEnd = confirm('确定结束游戏？将触发结局判定。');
+            if (confirmEnd) triggerEnding();
+        });
+
+        // 初始化
+        updateUI();
+        narrate('🌸✨ 完整故事版，每个行动都有细腻剧情。', 'dm');
+        narrate('📖 点击「开始游戏」开启你的大学初恋之旅。', 'system');
+    </script>
+</body>
+</html>
